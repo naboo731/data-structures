@@ -1,6 +1,9 @@
 """Functions to parse a file containing student data."""
 
 
+from calendar import c
+
+
 def all_houses(filename):
     """Return a set of all house names in the given file.
 
@@ -17,7 +20,11 @@ def all_houses(filename):
 
     houses = set()
 
-    # TODO: replace this with your code
+    character_data = open(filename)
+    for line in character_data:
+        house = line.rstrip().split('|')[2]
+        if house:
+            houses.add(house)
 
     return houses
 
@@ -52,8 +59,12 @@ def students_by_cohort(filename, cohort='All'):
 
     students = []
 
-    # TODO: replace this with your code
+    character_data = open(filename)
+    for line in character_data:
+        firstname, lastname, _, _, cohort_name = line.rstrip().split('|')
 
+        if cohort_name not in ("I", "G") and cohort in ("All", cohort_name):
+            students.append(f'{firstname} {lastname}')
     return sorted(students)
 
 
@@ -96,9 +107,27 @@ def all_names_by_house(filename):
     ghosts = []
     instructors = []
 
-    # TODO: replace this with your code
+    character_data = open(filename)
+    for line in character_data:
+        firstname, lastname, house, _, cohort_name = line.rstrip().split('|')
 
-    return []
+        if house:
+            if house == "Dumbledore's Army":
+                dumbledores_army.append(f'{firstname} {lastname}')
+            elif house == 'Gryffindor':
+                gryffindor.append(f'{firstname} {lastname}')
+            elif house == 'Hufflepuff':
+                hufflepuff.append(f'{firstname} {lastname}')
+            elif house == 'Ravenclaw':
+                ravenclaw.append(f'{firstname} {lastname}')
+            elif house == 'Slytherin':
+                slytherin.append(f'{firstname} {lastname}')
+        else:
+            if cohort_name == "G":
+                ghosts.append(f'{firstname} {lastname}')
+            elif cohort_name == 'I':
+                instructors.append(f'{firstname} {lastname}')
+    return [sorted(dumbledores_army), sorted(gryffindor), sorted(hufflepuff), sorted(ravenclaw), sorted(slytherin), sorted(ghosts), sorted(instructors)]
 
 
 def all_data(filename):
@@ -122,7 +151,12 @@ def all_data(filename):
 
     all_data = []
 
-    # TODO: replace this with your code
+    character_data = open(filename)
+    for line in character_data:
+        firstname, lastname, house, advisor, cohort = line.rstrip().split('|')
+        full_name = f'{firstname} {lastname}'
+
+        all_data.append(full_name, house, advisor, cohort)
 
     return all_data
 
@@ -148,7 +182,17 @@ def get_cohort_for(filename, name):
       - str: the person's cohort or None
     """
 
-    # TODO: replace this with your code
+    character_data = open(filename)
+    for line in character_data:
+        firstname, lastname, house, advisor, cohort = line.rstrip().split('|')
+        full_name = f'{firstname} {lastname}'
+
+        all_data.append(full_name, house, advisor, cohort)
+        for full_name, _, _, cohort in all_data:
+            if full_name == name:
+                return cohort
+            else:
+                return None
 
 
 def find_duped_last_names(filename):
@@ -165,7 +209,18 @@ def find_duped_last_names(filename):
       - set[str]: a set of strings
     """
 
-    # TODO: replace this with your code
+    duplicates = set()
+    appeared = set()
+
+    for full_name, _, _, _ in all_data(filename):
+        last = full_name.split(' ')[-1]
+
+        if last in appeared:
+            duplicates.add(last)
+
+        appeared.add(last)
+
+    return duplicates
 
 
 def get_housemates_for(filename, name):
@@ -180,7 +235,25 @@ def get_housemates_for(filename, name):
     {'Angelina Johnson', ..., 'Seamus Finnigan'}
     """
 
-    # TODO: replace this with your code
+    housemates = set()
+
+    target = None
+    for person in all_data(filename):
+        full_name, house, advisor, cohort = person
+
+        if full_name == name:
+            target = person
+            break
+
+    if target:
+        target_name, target_house, _, target_cohort = target
+
+        for full_name, house, _, cohort_name in all_data(filename):
+            if ((house, cohort_name) == (target_house, target_cohort) and
+                    full_name != name):
+                housemates.add(full_name)
+
+    return housemates
 
 
 ##############################################################################
